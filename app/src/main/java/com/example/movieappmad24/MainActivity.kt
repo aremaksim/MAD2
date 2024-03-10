@@ -6,7 +6,6 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.animation.animateContentSize
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -28,25 +27,28 @@ import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.Divider
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.ShapeDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.ui.unit.dp
-import androidx.compose.material3.*
-import androidx.compose.ui.graphics.Color
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import coil.compose.AsyncImage
 import com.example.movieappmad24.models.Movie
 import com.example.movieappmad24.models.getMovies
 import com.example.movieappmad24.ui.theme.MovieAppMAD24Theme
@@ -58,12 +60,10 @@ class MainActivity : ComponentActivity() {
             MovieAppMAD24Theme {
                 // A surface container using the 'background' color from the theme
                 Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colorScheme.background
+                    modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background
                 ) {
-
+                    MovieApp()
                 }
-                MovieApp()
             }
         }
     }
@@ -82,11 +82,9 @@ fun MovieApp() {
     ) {
         Column {
             Box(
-                modifier = Modifier
-                    .fillMaxWidth(),
-                contentAlignment = Alignment.Center
+                modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center
             ) {
-                CenterAlignedTopAppBar(title = { Text("Movie App") })
+                CenterAlignedTopAppBar(title = { Text("Movie App") }) //TopAppBar
             }
             Box(
                 modifier = Modifier
@@ -94,36 +92,23 @@ fun MovieApp() {
                     .height(530.dp)
                     .padding(6.dp),
             ) {
-                MovieList(movies = getMovies())
+                MovieList(movies = getMovies()) // MovieList
             }
             Row(
-                modifier = Modifier
-                    .fillMaxSize(),
+                modifier = Modifier.fillMaxSize(),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                NavigationBar {
-                    NavigationBarItem(
-                        selected = true,
-                        onClick = { /*TODO*/ },
-                        icon = {
-                            Icon(
-                                imageVector = Icons.Default.Home,
-                                contentDescription = "Home"
-                            )
-                        },
-                        label = { Text("Home") }
-                    )
-                    NavigationBarItem(
-                        selected = true,
-                        onClick = { /*TODO*/ },
-                        icon = {
-                            Icon(
-                                imageVector = Icons.Default.Star,
-                                contentDescription = "Watchlist"
-                            )
-                        },
-                        label = { Text("Watchlist") }
-                    )
+                NavigationBar {// NavigationBottomBar
+                    NavigationBarItem(selected = true, onClick = { /*TODO*/ }, icon = {
+                        Icon(
+                            imageVector = Icons.Default.Home, contentDescription = "Home"
+                        )
+                    }, label = { Text("Home") })
+                    NavigationBarItem(selected = true, onClick = { /*TODO*/ }, icon = {
+                        Icon(
+                            imageVector = Icons.Default.Star, contentDescription = "Watchlist"
+                        )
+                    }, label = { Text("Watchlist") })
                 }
             }
         }
@@ -144,7 +129,6 @@ fun MovieRow(movie: Movie) {
     var showDetails by remember {
         mutableStateOf(false)
     }
-
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -159,10 +143,11 @@ fun MovieRow(movie: Movie) {
                     .fillMaxWidth(),
                 contentAlignment = Alignment.Center
             ) {
-                Image(
-                    painter = painterResource(id = R.drawable.movie_image),
+                AsyncImage(
+                    model = movie.images[0],
                     contentScale = ContentScale.Crop,
-                    contentDescription = "placeholder image"
+                    contentDescription = "placeholder image",
+                    //placeholder = painterResource(id = R.drawable.movie_image)
                 )
                 Box(
                     modifier = Modifier
@@ -177,7 +162,6 @@ fun MovieRow(movie: Movie) {
                     )
                 }
             }
-
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -185,44 +169,33 @@ fun MovieRow(movie: Movie) {
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Text(text = movie.title)
-                Box(
-                    modifier = Modifier
-                        .animateContentSize()
-                        .clickable(
-                            interactionSource = remember { MutableInteractionSource() },
-                            indication = null
-                        ) {
-                            showDetails = !showDetails
-                        }
-                ) {
+                Box(modifier = Modifier
+                    .animateContentSize()
+                    .clickable(
+                        interactionSource = remember { MutableInteractionSource() },
+                        indication = null
+                    ) {
+                        showDetails = !showDetails
+                    }) {
                     Icon(
-                        modifier = Modifier
-                            .clickable {
+                        modifier = Modifier.clickable {
                                 showDetails = !showDetails
-                            },
-                        imageVector =
-                        if (showDetails) Icons.Filled.KeyboardArrowDown
+                            }, imageVector = if (showDetails) Icons.Filled.KeyboardArrowDown
                         else Icons.Default.KeyboardArrowUp, contentDescription = "show more"
                     )
                 }
-
             }
             if (showDetails) ShowMovieDetails(movie = movie)
-
         }
     }
 }
 
-//Use AnimatedVisibility or animateContentSize to collapse details
-//toggle arrow icon you can use animations
 @Composable
 fun ShowMovieDetails(movie: Movie) {
     Card {
         Column(
-            modifier = Modifier
-                .padding(all = 5.dp)
+            modifier = Modifier.padding(all = 5.dp)
         ) {
-
             Text(text = "Director: " + movie.director)
             Text(text = "Year: " + movie.year)
             Text(text = "Genre: " + movie.genre)
@@ -231,9 +204,7 @@ fun ShowMovieDetails(movie: Movie) {
             Divider()
             Text(text = "Plot: " + movie.plot)
         }
-
     }
-
 }
 
 @Preview
