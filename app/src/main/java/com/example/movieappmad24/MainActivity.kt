@@ -5,9 +5,11 @@ package com.example.movieappmad24
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -20,8 +22,10 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.FavoriteBorder
+import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -30,10 +34,8 @@ import androidx.compose.material3.ShapeDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.material.icons.filled.Home
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.ui.unit.dp
-import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.*
 import androidx.compose.ui.graphics.Color
 import androidx.compose.runtime.getValue
@@ -69,47 +71,10 @@ class MainActivity : ComponentActivity() {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MovieApp1() {
-    Surface(modifier = Modifier.fillMaxSize(), color = Color.Green) {
-        Column {
-            CenterAlignedTopAppBar(title = { Text("Movie App") })
-            //MovieList(movies = getMovies())
-            NavigationBar {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(6.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    BottomAppBar(
-                        actions = {
-                            IconButton(onClick = { /*TODO*/ }) {
-                                Icon(
-                                    imageVector = Icons.Default.Home,
-                                    contentDescription = "Home"
-                                ) //Text= Home
-                            }
-                            IconButton(onClick = { /*TODO*/ }) {
-                                Icon(
-                                    imageVector = Icons.Default.Star,
-                                    contentDescription = "Watchlist"
-                                ) //Text = Watchlist
-                            }
-                        }
-                    )
-                }
-            }
-        }
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
 fun MovieApp() {
     Card(
         modifier = Modifier
-            .fillMaxWidth()
+            .fillMaxSize()
             .background(color = Color.DarkGray)
             .padding(5.dp),
         shape = ShapeDefaults.Large,
@@ -118,7 +83,6 @@ fun MovieApp() {
         Column {
             Box(
                 modifier = Modifier
-                    .background(color = Color.Cyan)
                     .fillMaxWidth(),
                 contentAlignment = Alignment.Center
             ) {
@@ -127,52 +91,41 @@ fun MovieApp() {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(500.dp)
+                    .height(530.dp)
                     .padding(6.dp),
             ) {
                 MovieList(movies = getMovies())
             }
             Row(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .height(80.dp)
-                    .padding(3.dp),
+                    .fillMaxSize(),
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                BottomAppBar(
-                    actions = {
-                        //NavigationBar {
-                        // NavigationBarItem(
-                        //   selected = ,
-                        //  onClick = { /*TODO*/ },
-                        //  icon = {Icons.Default.Home})
-                        // NavigationBarItem(
-                        //    selected = ,
-                        //  onClick = { /*TODO*/ },
-                        //   icon = {Icons.Default.Star})
-                        // }
-
-                        IconButton(onClick = { /*TODO*/ }) {
+                NavigationBar {
+                    NavigationBarItem(
+                        selected = true,
+                        onClick = { /*TODO*/ },
+                        icon = {
                             Icon(
                                 imageVector = Icons.Default.Home,
                                 contentDescription = "Home"
-                            ) //Text(text = "Home")
-                        }
-
-                        IconButton(onClick = { /*TODO*/ }) {
-
+                            )
+                        },
+                        label = { Text("Home") }
+                    )
+                    NavigationBarItem(
+                        selected = true,
+                        onClick = { /*TODO*/ },
+                        icon = {
                             Icon(
                                 imageVector = Icons.Default.Star,
                                 contentDescription = "Watchlist"
-                            ) //Text(text = "Watchlist")
-
-                        }
-
-                    }
-                )
+                            )
+                        },
+                        label = { Text("Watchlist") }
+                    )
+                }
             }
-
         }
     }
 }
@@ -229,22 +182,58 @@ fun MovieRow(movie: Movie) {
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(6.dp),
-                verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Text(text = movie.title)
-                Icon(
+                Box(
                     modifier = Modifier
-                        .clickable {
+                        .animateContentSize()
+                        .clickable(
+                            interactionSource = remember { MutableInteractionSource() },
+                            indication = null
+                        ) {
                             showDetails = !showDetails
-                        },
-                    imageVector =
-                    if (showDetails) Icons.Filled.KeyboardArrowDown
-                    else Icons.Default.KeyboardArrowUp, contentDescription = "show more"
-                )
+                        }
+                ) {
+                    Icon(
+                        modifier = Modifier
+                            .clickable {
+                                showDetails = !showDetails
+                            },
+                        imageVector =
+                        if (showDetails) Icons.Filled.KeyboardArrowDown
+                        else Icons.Default.KeyboardArrowUp, contentDescription = "show more"
+                    )
+                }
+
             }
+            if (showDetails) ShowMovieDetails(movie = movie)
+
         }
     }
+}
+
+//Use AnimatedVisibility or animateContentSize to collapse details
+//toggle arrow icon you can use animations
+@Composable
+fun ShowMovieDetails(movie: Movie) {
+    Card {
+        Column(
+            modifier = Modifier
+                .padding(all = 5.dp)
+        ) {
+
+            Text(text = "Director: " + movie.director)
+            Text(text = "Year: " + movie.year)
+            Text(text = "Genre: " + movie.genre)
+            Text(text = "Actors: " + movie.actors)
+            Text(text = "Rating: " + movie.rating)
+            Divider()
+            Text(text = "Plot: " + movie.plot)
+        }
+
+    }
+
 }
 
 @Preview
